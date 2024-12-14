@@ -3,11 +3,9 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-console.log(process.env.LINKEDIN_EMAIL);
-
 (async () => {
   const browser = await puppeteer.launch({
-    executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe",
+    executablePath: process.env.CHROME_DRIVER_PATH,
     headless: false,
   });
 
@@ -48,8 +46,29 @@ console.log(process.env.LINKEDIN_EMAIL);
       btn.click();
     }
   });
+  await page.waitForNavigation();
+  await new Promise((resolve) => setTimeout(resolve, 2000));
 
-  await new Promise((resolve) => setTimeout(resolve, 2000)); // Short delay for DOM update
+  await page.locator("aria/2nd").click();
+  await page.waitForNavigation();
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+
+  const filterByCompany = async (Company) => {
+    await page.locator("#searchFilter_currentCompany").click();
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    await page.locator("aria/Add a company").fill(Company);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    await page.locator(".basic-typeahead__selectable").click();
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    await page.locator("aria/Apply current filter to show results").click();
+    await page.waitForNavigation();
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+  };
+
+  await filterByCompany("ecell nit silchar");
 
   // Click on "Connect" buttons
   const sendInvites = async () => {
@@ -83,12 +102,25 @@ console.log(process.env.LINKEDIN_EMAIL);
       resultsSent.push(...results);
 
       // Scroll to load more results
-      hasMore = await page.evaluate(() => {
+      hasMore = await page.evaluate(async () => {
         window.scrollBy(0, window.innerHeight);
         const connectButtons = Array.from(
-            document.querySelectorAll("button")
-          ).filter((btn) => btn.innerText.trim() === "Connect");
-        return connectButtons.length > 0;
+          document.querySelectorAll("button")
+        ).filter((btn) => btn.innerText.trim() === "Connect");
+        if (connectButtons.length > 0) {
+          return true;
+        } else {
+          const next = document.querySelector(".artdeco-pagination__button--next");
+          console.log(next);
+          
+          if (next) {
+            console.log("Next button found.");
+            next.click();
+            await new Promise((resolve) => setTimeout(resolve, 4000));
+            return true;
+          }
+          return false;
+        }
       });
 
       await new Promise((resolve) => setTimeout(resolve, 2000));
