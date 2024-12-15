@@ -180,46 +180,65 @@ const connectionMessage = async (Company) => {
   // await filterByCompany(Company);
 
   const sendMessage = async () => {
-    const resultsSent = [];
-    let hasMore = true;
-
+    // let cnt = 0;
     await page.exposeFunction("moveMouse", async (x, y) => {
       // page is accessible here
-
-
-      const name =await page.$eval(".msg-overlay-bubble-header__title",(el)=>el.innerText);
+      const name = await page.$eval(
+        ".msg-overlay-bubble-header__title",
+        (el) => el.innerText
+      );
       const Message = generateMessage(name);
       await page.locator(".msg-form__contenteditable").click();
       await page.keyboard.type(Message);
     });
-    await page.evaluate(async () => {
-      const messageButton = Array.from(
-        document.querySelectorAll("button")
-      ).filter((btn) => btn.innerText.trim() === "Message");
-      messageButton[2].click();
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      window.moveMouse(100, 100);
-      await new Promise((resolve) => setTimeout(resolve, 6000));
-      const sendNowButton = Array.from(
-        document.querySelectorAll("button")
-      ).filter((btn) => btn.innerText.trim() === "Send")[0];
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      const closeChatButton = Array.from(document.querySelectorAll(".msg-overlay-bubble-header__control"));
-      const closeBtn=closeChatButton[closeChatButton.length - 1];
-      // console.log(closeChatButton[closeChatButton.length - 1] + " line 202");
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      if (sendNowButton) {
-        sendNowButton.click();
-        await new Promise((resolve) => setTimeout(resolve, 4000));
-        closeBtn.click();
-        return "Message sent.";
-      } else {
-        closeBtn.click();
-        return "Send now button not found.";
+    const count = await page.evaluate(async () => {
+      let cnt = 0;
+      let hasMore = true;
+      while (hasMore) {
+        const messageButton = Array.from(
+          document.querySelectorAll("button")
+        ).filter((btn) => btn.innerText.trim() === "Message");
+
+        for (let i = 0; i < messageButton.length; i++) {
+          messageButton[i].click();
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+          // window.moveMouse(100, 100);
+          // await new Promise((resolve) => setTimeout(resolve, 3000));
+          // const sendNowButton = Array.from(
+          //   document.querySelectorAll("button")
+          // ).filter((btn) => btn.innerText.trim() === "Send")[0];
+          // await new Promise((resolve) => setTimeout(resolve, 2000));
+          const closeBtn = Array.from(
+            document.querySelectorAll(".artdeco-button__text")
+          ).filter((span) => {
+            return span.innerText.includes("Close your");
+          })[0];
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          // if (sendNowButton) {
+          //   sendNowButton.click();
+          //   await new Promise((resolve) => setTimeout(resolve, 4000));
+          //   closeBtn.click();
+          //   return "Message sent.";
+          // } else {
+          //   closeBtn.click();
+          //   return "Send now button not found.";
+          // }
+          await closeBtn.click();
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
+        const next = Array.from(
+          document.querySelectorAll(".artdeco-pagination__button--next")
+        )[0];
+        if (next.disabled === false) {
+          next.click();
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+        } else {
+          hasMore = false;
+        }
       }
     });
   };
-  console.log((await sendMessage()) + " line 207");
+  console.log((await sendMessage()) + " messages sent");
 };
 
 // searchConnect("payu");
