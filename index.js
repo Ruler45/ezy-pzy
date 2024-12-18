@@ -29,7 +29,7 @@ await loginButton.dispose();
 await page.waitForNavigation();
 
 // Company wise search and connect
-const searchConnect = async (Role, Company) => {
+const searchConnect = async (Role, Company,limit=20) => {
   // Search people
   const searchInput = await page.waitForSelector(
     ".search-global-typeahead__input"
@@ -68,76 +68,71 @@ const searchConnect = async (Role, Company) => {
     await new Promise((resolve) => setTimeout(resolve, 2000));
   };
 
-  Company !== undefined && (await filterByCompany(Company));
+  Company !== undefined && Company!="" && (await filterByCompany(Company));
 
   // Click on "Connect" buttons
-  const sendInvites = async () => {
-    const resultsSent = [];
-    let hasMore = true;
+  const sendInvites = async (limit) => {
+    const InvitesSent = await page.evaluate(async (limit) => {
+      let result = [];
+      let hasMore = true;
 
-    while (hasMore) {
-      // Find and click "Connect" buttons
-      const results = await page.evaluate(() => {
+      while (hasMore) {
         const connectButtons = Array.from(
           document.querySelectorAll("button")
         ).filter((btn) => btn.innerText.trim() === "Connect");
-        const results = [];
-        connectButtons.map(async (btn) => {
-          btn.click();
+
+        for (let i = 0; i < connectButtons.length; i++) {
+          // Ensure not already open
+          const closeAlreadyOpen= document.querySelector(".artdeco-modal__dismiss");
+          closeAlreadyOpen && closeAlreadyOpen.click();
+          connectButtons[i].click();
           await new Promise((resolve) => setTimeout(resolve, 2000));
+
           const sendNowButton = Array.from(
             document.querySelectorAll("button")
-          ).filter((btn) => btn.innerText.trim() === "Send")[0];
-          if (sendNowButton) {
+          ).find((btn) => btn.innerText.trim() === "Send");
+
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          if (sendNowButton && !sendNowButton.disabled) {
             sendNowButton.click();
-            results.push("Invite sent.");
             await new Promise((resolve) => setTimeout(resolve, 2000));
+            result.push("1");
           } else {
-            results.push("Send now button not found.");
+            const closeBtn= document.querySelector(".artdeco-modal__dismiss");
+            closeBtn && closeBtn.click();
+            // console.log("Send button not found!");
+            result.push("0");
           }
-        });
-        return results;
-      });
-
-      resultsSent.push(...results);
-
-      // Scroll to load more results
-      hasMore = await page.evaluate(async () => {
-        window.scrollBy(0, window.innerHeight);
-        const connectButtons = Array.from(
-          document.querySelectorAll("button")
-        ).filter((btn) => btn.innerText.trim() === "Connect");
-        if (connectButtons.length > 0) {
-          return true;
-        } else {
-          const next = document.querySelector(
-            ".artdeco-pagination__button--next"
-          );
-          console.log(next);
-
-          if (next) {
-            // console.log("Next button found.");
-            next.click();
-            await new Promise((resolve) => setTimeout(resolve, 4000));
-            return true;
-          }
-          return false;
+          if(limit && result.length >= limit) return result;
         }
-      });
 
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-    }
+        // Scroll to load more results
+        window.scrollTo(0, window.innerHeight+1000);
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const next = Array.from(document.querySelectorAll("button")).find(
+          (btn) => btn.innerText.trim() === "Next"
+        );
+        if (next && !next.disabled) {
+          next.click();
+          await new Promise((resolve) => setTimeout(resolve, 4000));
+        } else {
+          hasMore = false;
+        }
+      }
 
-    return "Invites sent: " + resultsSent.length;
-  };
-
-  console.log(await sendInvites());
+      return result;
+    },limit);
+    return InvitesSent;
+  }
+  const  inviteResult = await sendInvites(limit);
+  const inviteCount = inviteResult.filter((ele) => ele === "1").length;
+  console.log("Invites sent to ", inviteCount, "people" ,"out of", inviteResult.length);
 
   // Close browser (optional for testing)
   // await browser.close();
 };
 
-const connectionMessage = async (Company) => {
+const connectionMessage = async (Company,limit=20) => {
   // Search people
   const searchInput = await page.waitForSelector(
     ".search-global-typeahead__input"
@@ -176,9 +171,9 @@ const connectionMessage = async (Company) => {
     await new Promise((resolve) => setTimeout(resolve, 2000));
   };
 
-  Company !== undefined && (await filterByCompany(Company));
+  Company !== undefined && Company!="" && (await filterByCompany(Company));
 
-  const sendMessage = async () => {
+  const sendMessage = async (limit) => {
     await page.exposeFunction("moveMouse", async (x, y) => {
       let name = "";
       try {
@@ -207,7 +202,7 @@ const connectionMessage = async (Company) => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
     });
 
-    const messageSent = await page.evaluate(async () => {
+    const messageSent = await page.evaluate(async (limit) => {
       let result = [];
       let hasMore = true;
 
@@ -263,6 +258,7 @@ const connectionMessage = async (Company) => {
             closeBtn.click();
             await new Promise((resolve) => setTimeout(resolve, 1000));
           }
+          if (limit && result.length >= limit) return result;
         }
 
         // Scroll and navigate to the next page
@@ -279,12 +275,12 @@ const connectionMessage = async (Company) => {
         }
       }
       return result;
-    });
+    },limit);
 
     return messageSent;
   };
 
-  const messageCount = await sendMessage();
+  const messageCount = await sendMessage(limit);
   const sendCount = messageCount.filter((ele) => ele === "1").length;
   console.log(
     "Message sent to ",
@@ -295,6 +291,6 @@ const connectionMessage = async (Company) => {
   );
 };
 
-// searchConnect("Role","payu");
+// searchConnect("Software Engineer","Google",5);
 
-connectionMessage("Google Developer Groups On Campus, NIT Silchar");
+// connectionMessage("",2);
