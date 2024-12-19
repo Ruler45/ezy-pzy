@@ -6,6 +6,7 @@ dotenv.config();
 const browser = await puppeteer.launch({
   executablePath: process.env.CHROME_DRIVER_PATH,
   headless: false,
+  protocolTimeout: 3600000,
 });
 
 const page = await browser.newPage();
@@ -29,7 +30,7 @@ await loginButton.dispose();
 await page.waitForNavigation();
 
 // Company wise search and connect
-const searchConnect = async (Role, Company,limit=20) => {
+const searchConnect = async (Role, Company, limit = 20) => {
   // Search people
   const searchInput = await page.waitForSelector(
     ".search-global-typeahead__input"
@@ -40,12 +41,17 @@ const searchConnect = async (Role, Company,limit=20) => {
   await page.waitForNavigation();
 
   // Filter for "People"
-  await page.$$eval(".artdeco-pill", (btns) => {
+  const people = await page.$$eval(".artdeco-pill", (btns) => {
     const btn = btns.find((b) => b.innerText.trim() === "People");
     if (btn) {
       btn.click();
+      return true;
+    } else {
+      console.log("People button not found");
+      return false;
     }
   });
+  if (!people) return console.log("People button not found");
   await page.waitForNavigation();
   await new Promise((resolve) => setTimeout(resolve, 2000));
 
@@ -64,30 +70,40 @@ const searchConnect = async (Role, Company,limit=20) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     await page.locator("aria/Apply current filter to show results").click();
-    await page.waitForNavigation();
+    // await page.waitForNavigation();
     await new Promise((resolve) => setTimeout(resolve, 2000));
   };
 
-  Company !== undefined && Company!="" && (await filterByCompany(Company));
+  Company !== undefined && Company != "" && (await filterByCompany(Company));
 
   // Click on "Connect" buttons
   const sendInvites = async (limit) => {
-    const InvitesSent = await page.evaluate(async (limit) => {
-      let result = [];
-      let hasMore = true;
-
-      while (hasMore) {
-        const connectButtons = Array.from(
-          document.querySelectorAll("button")
-        ).filter((btn) => btn.innerText.trim() === "Connect");
-
-        for (let i = 0; i < connectButtons.length; i++) {
-          // Ensure not already open
-          const closeAlreadyOpen= document.querySelector(".artdeco-modal__dismiss");
+    let InvitesSent = [];
+    let hasMore = true;
+    while (hasMore) {
+      const buttons = await page.$$("button");
+      const connectButtons = [];
+      for (const button of buttons) {
+        const text = await page.evaluate((el) => el.innerText, button);
+        if (text.trim() === "Connect") {
+          connectButtons.push(button);
+        }
+      }
+      let i = 0;
+      while (i < connectButtons.length) {
+        // Ensure not already open
+        await page.evaluate(async () => {
+          const closeAlreadyOpen = document.querySelector(
+            ".artdeco-modal__dismiss"
+          );
           closeAlreadyOpen && closeAlreadyOpen.click();
-          connectButtons[i].click();
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        });
+        // await new Promise((resolve) => setTimeout(resolve, 1000));
+        await connectButtons[i].click();
+        i++;
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const sentIndividually = await page.evaluate(async () => {
           const sendNowButton = Array.from(
             document.querySelectorAll("button")
           ).find((btn) => btn.innerText.trim() === "Send");
@@ -96,18 +112,20 @@ const searchConnect = async (Role, Company,limit=20) => {
           if (sendNowButton && !sendNowButton.disabled) {
             sendNowButton.click();
             await new Promise((resolve) => setTimeout(resolve, 2000));
-            result.push("1");
+            return true;
           } else {
-            const closeBtn= document.querySelector(".artdeco-modal__dismiss");
+            const closeBtn = document.querySelector(".artdeco-modal__dismiss");
             closeBtn && closeBtn.click();
-            // console.log("Send button not found!");
-            result.push("0");
+            return false;
           }
-          if(limit && result.length >= limit) return result;
-        }
+        });
+        InvitesSent.push(sentIndividually ? "1" : "0");
+        // Break if limit reached
+        if (limit && InvitesSent.length >= limit) return InvitesSent;
+      }
 
-        // Scroll to load more results
-        window.scrollTo(0, window.innerHeight+1000);
+      hasMore = await page.evaluate(async () => {
+        window.scrollTo(0, window.innerHeight + 1000);
         await new Promise((resolve) => setTimeout(resolve, 1000));
         const next = Array.from(document.querySelectorAll("button")).find(
           (btn) => btn.innerText.trim() === "Next"
@@ -115,24 +133,26 @@ const searchConnect = async (Role, Company,limit=20) => {
         if (next && !next.disabled) {
           next.click();
           await new Promise((resolve) => setTimeout(resolve, 4000));
+          return true;
         } else {
-          hasMore = false;
+          return false;
         }
-      }
-
-      return result;
-    },limit);
+      });
+    }
     return InvitesSent;
-  }
-  const  inviteResult = await sendInvites(limit);
+  };
+  const inviteResult = await sendInvites(limit);
   const inviteCount = inviteResult.filter((ele) => ele === "1").length;
-  console.log("Invites sent to ", inviteCount, "people" ,"out of", inviteResult.length);
-
-  // Close browser (optional for testing)
-  // await browser.close();
+  console.log(
+    "Invites sent to ",
+    inviteCount,
+    "people",
+    "out of",
+    inviteResult.length
+  );
 };
 
-const connectionMessage = async (Company,limit=20) => {
+const connectionMessage = async (Company, limit = 20) => {
   // Search people
   const searchInput = await page.waitForSelector(
     ".search-global-typeahead__input"
@@ -167,11 +187,11 @@ const connectionMessage = async (Company,limit=20) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     await page.locator("aria/Apply current filter to show results").click();
-    await page.waitForNavigation();
+    // await page.waitForNavigation();
     await new Promise((resolve) => setTimeout(resolve, 2000));
   };
 
-  Company !== undefined && Company!="" && (await filterByCompany(Company));
+  Company !== undefined && Company != "" && (await filterByCompany(Company));
 
   const sendMessage = async (limit) => {
     await page.exposeFunction("moveMouse", async (x, y) => {
@@ -182,7 +202,7 @@ const connectionMessage = async (Company,limit=20) => {
           (el) => el?.innerText
         );
       } catch (e) {
-        console.log(e);
+        // console.log(e);
       }
 
       if (!name) {
@@ -192,27 +212,42 @@ const connectionMessage = async (Company,limit=20) => {
             (el) => el?.innerText
           );
         } catch (e) {
-          console.log(e);
+          // console.log(e);
           name = "Sir/Madam";
         }
       }
       const Message = generateMessage(name);
-      await page.locator(".msg-form__contenteditable").click();
-      await page.keyboard.type(Message);
+      const messageBox = await page.$(".msg-form__contenteditable");
+      await page.evaluate(async (Message) => {
+        const messageBoxPara = document.querySelector(
+          ".msg-form__contenteditable>p"
+        );
+        messageBoxPara.innerText = Message;
+      }, Message);
+      new Promise((resolve) => setTimeout(resolve, 1500));
+      await messageBox.click();
+      await page.keyboard.type(".");
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
+      await page.keyboard.press("Backspace");
       await new Promise((resolve) => setTimeout(resolve, 1000));
     });
+    let hasMore = true;
+    let messageSent = [];
+    while (hasMore) {
+      const buttons = await page.$$("button");
+      const messageButtons = [];
 
-    const messageSent = await page.evaluate(async (limit) => {
-      let result = [];
-      let hasMore = true;
-
-      while (hasMore) {
-        const messageButtons = Array.from(
-          document.querySelectorAll("button")
-        ).filter((btn) => btn.innerText.trim() === "Message");
-
-        for (let i = 0; i < messageButtons.length; i++) {
-          // Ensure not already open
+      for (const button of buttons) {
+        const text = await page.evaluate((el) => el.innerText, button);
+        if (text.trim() === "Message") {
+          messageButtons.push(button);
+        }
+      }
+      let i = 0;
+      // send message to indvidual people in the page
+      while (i < messageButtons.length) {
+        // Ensure not already open
+        await page.evaluate(async () => {
           const isOpen = !!document.querySelector(".msg-form__contenteditable");
           if (isOpen) {
             const closeBtn = Array.from(
@@ -223,45 +258,60 @@ const connectionMessage = async (Company,limit=20) => {
               await new Promise((resolve) => setTimeout(resolve, 1000));
             }
           }
+        });
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await messageButtons[i].click();
+        i++;
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        try {
+          const sentIndividually = await page.evaluate(
+            async () => {
+              const contentBox = document.querySelector(
+                ".msg-form__contenteditable"
+              );
+              if (!contentBox) {
+                console.log("Message box not found!");
+                return false;
+              }
 
-          messageButtons[i].click();
-          await new Promise((resolve) => setTimeout(resolve, 2000));
+              await window.moveMouse(100, 100);
 
-          const contentBox = document.querySelector(
-            ".msg-form__contenteditable"
+              const sendNowButton = Array.from(
+                document.querySelectorAll("button")
+              ).find((btn) => btn.innerText.trim() === "Send");
+              await new Promise((resolve) => setTimeout(resolve, 1000));
+
+              let sent = true;
+              if (sendNowButton && !sendNowButton.disabled) {
+                sendNowButton.click();
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+              } else {
+                sent = false;
+              }
+
+              const closeBtn = Array.from(
+                document.querySelectorAll(".artdeco-button__text")
+              ).find((span) => span.innerText.includes("Close your"));
+              if (closeBtn) {
+                closeBtn.click();
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+              }
+              return sent;
+            },
+            { timeout: 120000 }
           );
-          if (!contentBox) {
-            console.log("Message box not found!");
-            continue;
-          }
-
-          await window.moveMouse(100, 100);
-
-          const sendNowButton = Array.from(
-            document.querySelectorAll("button")
-          ).find((btn) => btn.innerText.trim() === "Send");
-
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          if (sendNowButton) {
-            sendNowButton.click();
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-            result.push("1");
-          } else {
-            console.log("Send button not found!");
-            result.push("0");
-          }
-
-          const closeBtn = Array.from(
-            document.querySelectorAll(".artdeco-button__text")
-          ).find((span) => span.innerText.includes("Close your"));
-          if (closeBtn) {
-            closeBtn.click();
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-          }
-          if (limit && result.length >= limit) return result;
+          messageSent.push(sentIndividually ? "1" : "0");
+        } catch (error) {
+          messageSent.push("0");
+          console.log(error);
         }
 
-        // Scroll and navigate to the next page
+        // Break if limit reached
+        if (limit && messageSent.length >= limit) return messageSent;
+      }
+
+      // Scroll to load more results
+      hasMore = await page.evaluate(async () => {
         window.scrollTo(0, window.innerHeight + 1000);
         await new Promise((resolve) => setTimeout(resolve, 1000));
         const next = Array.from(document.querySelectorAll("button")).find(
@@ -270,12 +320,12 @@ const connectionMessage = async (Company,limit=20) => {
         if (next && !next.disabled) {
           next.click();
           await new Promise((resolve) => setTimeout(resolve, 1500));
+          return true;
         } else {
-          hasMore = false;
+          return false;
         }
-      }
-      return result;
-    },limit);
+      });
+    }
 
     return messageSent;
   };
@@ -291,6 +341,8 @@ const connectionMessage = async (Company,limit=20) => {
   );
 };
 
-// searchConnect("Software Engineer","Google",5);
+await searchConnect("Software Engineer", "Google", 20);
 
-// connectionMessage("",2);
+// await connectionMessage("", 15);
+
+browser.close();
