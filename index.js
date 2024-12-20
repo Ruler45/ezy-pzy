@@ -220,7 +220,15 @@ const connectionMessage = async (Company, limit = 20) => {
 
   // read the Message.js file
   const __filename = pathToFileURL("D:/Projects/Puppeteer/ezy-pzy/Message.js");
+  if (!__filename) {
+    console.log("Message.js file not found");
+    process.exit(1);
+  }
   const { default: generateMessage } = await import(__filename.href);
+  if (typeof generateMessage !== "function") {
+    console.log("Message.js file should export a function");
+    process.exit(1);
+  }
 
   // Calculate expected time
   const randomMessage = generateMessage("Sir/Madam");
