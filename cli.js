@@ -10,7 +10,7 @@ global.localStorage = new LocalStorage("./storage");
 
 program
   .version("0.0.1", "-v, --version", "Output the version number")
-  .description("Welcome to Linkzy CLI");
+  .description("Welcome to Linkedzy CLI");
 
 // Subcommand to connect
 program
@@ -120,8 +120,8 @@ program
 
 // Check for no subcommands or options
 if (!process.argv.slice(2).length) {
-  console.log("Welcome to the Linkzy CLI");
-  console.log("Type 'linkzy --help' for more information");
+  console.log("Welcome to the Linkedzy CLI");
+  console.log("Type 'linkedzy --help' for more information");
 } else {
   program.parse(process.argv);
 }
