@@ -2,7 +2,7 @@
 	"name": "linkedfy",
 	"version": "0.0.1",
 	"bin": {
-		"linkedzy": "./cli.js"
+		"linkedfy": "./cli.js"
 	},
 	"type": "module",
 	"postinstall": "node postinstall.js",

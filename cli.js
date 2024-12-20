@@ -7,10 +7,23 @@ import { input, confirm } from "@inquirer/prompts";
 
 global.localStorage = new LocalStorage("./storage");
 
-
 program
   .version("0.0.1", "-v, --version", "Output the version number")
-  .description("Welcome to Linkedzy CLI");
+  .description("Welcome to Linkedfy CLI");
+
+// Global options
+program
+  .option("--email <email>", "Email of the LinkedIn account")
+  .option("--password <password>", "Password of the LinkedIn account")
+  .option("--message <message>", "Message to send with the connection request")
+  .action(() => {
+    const options = program.opts();
+    options.email && localStorage.setItem("LINKEDIN_EMAIL", options.email);
+    options.password &&
+      localStorage.setItem("LINKEDIN_PASSWORD", options.password);
+    options.message &&
+      localStorage.setItem("LINKEDIN_MESSAGE", options.message);
+  });
 
 // Subcommand to connect
 program
@@ -112,16 +125,10 @@ program
     }
   });
 
-// Global options
-program
-  .option("--email <email>", "Email of the LinkedIn account")
-  .option("--password <password>", "Password of the LinkedIn account")
-  .option("--message <message>", "Message to send with the connection request");
-
 // Check for no subcommands or options
 if (!process.argv.slice(2).length) {
   console.log("Welcome to the Linkedfy CLI");
-  console.log("Type 'linkedzy --help' for more information");
+  console.log("Type 'linkedfy --help' for more information");
 } else {
   program.parse(process.argv);
 }
