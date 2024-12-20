@@ -2,7 +2,7 @@ import puppeteer from "puppeteer";
 import dotenv from "dotenv";
 // import generateMessage from "./Message.js";
 import { LocalStorage } from "node-localstorage";
-import {pathToFileURL} from "url";
+import { pathToFileURL } from "url";
 
 global.localStorage = new LocalStorage("./storage");
 dotenv.config();
@@ -60,11 +60,14 @@ const searchConnect = async (Role, Company, limit = 20) => {
   // Calculate expected time
   const expectedTime = (45 + limit * 5) / 60;
   console.log("Sending messages. Please wait...");
-  console.log("Expected time required: ", expectedTime.toFixed(2), " minutes\n");
+  console.log(
+    "Expected time required: ",
+    expectedTime.toFixed(2),
+    " minutes\n"
+  );
   const start = new Date().getTime();
   // Open browser
   const browser = await puppeteer.launch({
-    executablePath: process.env.CHROME_DRIVER_PATH,
     headless: false,
   });
 
@@ -140,7 +143,7 @@ const searchConnect = async (Role, Company, limit = 20) => {
           closeAlreadyOpen && closeAlreadyOpen.click();
           await new Promise((resolve) => setTimeout(resolve, 1000));
         });
-        // await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         await connectButtons[i].click();
         i++;
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -161,8 +164,13 @@ const searchConnect = async (Role, Company, limit = 20) => {
           }
         });
         InvitesSent.push(sentIndividually ? "1" : "0");
-        if(InvitesSent.length % 5 === 0) console.log("............ ", (InvitesSent.length / limit) * 100, "% completed");
-        
+        if (InvitesSent.length % 5 === 0)
+          console.log(
+            "............ ",
+            (InvitesSent.length / limit) * 100,
+            "% completed"
+          );
+
         // Break if limit reached
         if (limit && InvitesSent.length >= limit) return InvitesSent;
       }
@@ -212,9 +220,7 @@ const connectionMessage = async (Company, limit = 20) => {
 
   // read the Message.js file
   const __filename = pathToFileURL("D:/Projects/Puppeteer/ezy-pzy/Message.js");
-  const { default: generateMessage } = await import(
-    __filename.href
-  );
+  const { default: generateMessage } = await import(__filename.href);
 
   // Calculate expected time
   const randomMessage = generateMessage("Sir/Madam");
@@ -432,4 +438,3 @@ const connectionMessage = async (Company, limit = 20) => {
 };
 
 export { searchConnect, connectionMessage };
-

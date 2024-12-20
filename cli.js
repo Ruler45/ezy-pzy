@@ -1,44 +1,52 @@
 #!/usr/bin/env node
 
 import { program } from "commander";
-import inquirer from "inquirer";
 import { LocalStorage } from "node-localstorage";
 import { searchConnect, connectionMessage } from "./index.js";
 
 global.localStorage = new LocalStorage("./storage");
 
+// Top-level default action
 program
-    .version("0.0.1")
-    .action(()=>{
-        console.log("Welcome to the CLI");
-        console.log("Type 'linkzy --help' for more information");
-        
-    })
+  .version("0.0.1", "-v, --version", "Output the version number")
+  .description("Welcome to Linkzy CLI");
 
+// Subcommand to connect
 program
-    .command("connect")
-    .description("Command to search people and send connection request on linkedin")
-    .action(async() => {
-        await searchConnect();
-    });
+  .command("connect")
+  .description("Search people and send connection requests on LinkedIn")
+  .action(async () => {
+    try {
+      await searchConnect();
+    } catch (err) {
+      console.log("Something went wrong:", err.message);
+    }
+  });
 
+// Subcommand to send messages
 program
-    .command("message")
-    .description("To send message to connections")
-    .action(async() => {
-        await connectionMessage();
-    });
+  .command("message")
+  .description("Send messages to LinkedIn connections")
+  .action(async () => {
+    try {
+      await connectionMessage();
+    } catch (err) {
+      console.log("Something went wrong:", err.message);
+    }
+  });
 
+// Global options
 program
-    .option("--email, --email <email>", "Email of the linkedin account")
-    .option("--password, --password <password>", "Password of the linkedin account")
-    .option("--message, --message <message>", "Message to send with connection request")
-    .action(async()=>{
-        const options = program.opts();
-        options.email &&  localStorage.setItem("LINKEDIN_EMAIL", options.email);
-        options.password && localStorage.setItem("LINKEDIN_PASSWORD", options.password);
-        options.message && localStorage.setItem("LINKEDIN_MESSAGE", options.message);
-    });
+  .option("--email <email>", "Email of the LinkedIn account")
+  .option("--password <password>", "Password of the LinkedIn account")
+  .option("--message <message>", "Message to send with the connection request");
 
+// Check for no subcommands or options
+if (!process.argv.slice(2).length) {
+  console.log("Welcome to the Linkzy CLI");
+  console.log("Type 'linkzy --help' for more information");
+} else {
+  program.parse(process.argv);
+}
 
-program.parse(process.argv);
+// Parse command-line arguments
