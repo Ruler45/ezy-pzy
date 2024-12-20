@@ -57,6 +57,11 @@ const openAndLogin = async (page) => {
 // Company wise search and connect
 const searchConnect = async (Role, Company, limit = 20) => {
   await checkEnv();
+  // Calculate expected time
+  const expectedTime = (45 + limit * 5) / 60;
+  console.log("Sending messages. Please wait...");
+  console.log("Expected time required: ", expectedTime.toFixed(2), " minutes\n");
+  const start = new Date().getTime();
   // Open browser
   const browser = await puppeteer.launch({
     executablePath: process.env.CHROME_DRIVER_PATH,
@@ -156,6 +161,8 @@ const searchConnect = async (Role, Company, limit = 20) => {
           }
         });
         InvitesSent.push(sentIndividually ? "1" : "0");
+        if(InvitesSent.length % 5 === 0) console.log("............ ", (InvitesSent.length / limit) * 100, "% completed");
+        
         // Break if limit reached
         if (limit && InvitesSent.length >= limit) return InvitesSent;
       }
@@ -188,6 +195,12 @@ const searchConnect = async (Role, Company, limit = 20) => {
   );
   // close the browser
   await browser.close();
+  const end = new Date().getTime();
+  console.log(
+    "Time taken: ",
+    ((end - start) / (1000 * 60)).toFixed(2),
+    " minutes"
+  );
 };
 
 const connectionMessage = async (Company, limit = 20) => {
@@ -202,6 +215,14 @@ const connectionMessage = async (Company, limit = 20) => {
   const { default: generateMessage } = await import(
     __filename.href
   );
+
+  // Calculate expected time
+  const randomMessage = generateMessage("Sir/Madam");
+  const expectedTime =
+    (Math.round(randomMessage.length / 1166) / 2) * limit + 1.5;
+  console.log("Sending messages. Please wait...");
+  console.log("Expected time required: ", expectedTime, " minutes\n");
+  const start = new Date().getTime();
 
   // Open browser
   const browser = await puppeteer.launch({
@@ -278,17 +299,12 @@ const connectionMessage = async (Company, limit = 20) => {
       }
       const Message = generateMessage(name);
       const messageBox = await page.$(".msg-form__contenteditable");
-      await page.evaluate(async (Message) => {
-        const messageBoxPara = document.querySelector(
-          ".msg-form__contenteditable>p"
-        );
-        messageBoxPara.innerText = Message;
-      }, Message);
-      new Promise((resolve) => setTimeout(resolve, 1500));
+      new Promise((resolve) => setTimeout(resolve, 1000));
       await messageBox.click();
-      await page.keyboard.type(".");
+      // await page.keyboard.type(".");
       // await new Promise((resolve) => setTimeout(resolve, 1000));
-      await page.keyboard.press("Backspace");
+      // await page.keyboard.press("Backspace");
+      await page.keyboard.type(Message);
       await new Promise((resolve) => setTimeout(resolve, 1000));
     });
     let hasMore = true;
@@ -361,6 +377,11 @@ const connectionMessage = async (Company, limit = 20) => {
             { timeout: 120000 }
           );
           messageSent.push(sentIndividually ? "1" : "0");
+          console.log(
+            "............ ",
+            (messageSent.length / limit) * 100,
+            "% completed"
+          );
         } catch (error) {
           messageSent.push("0");
           console.log(error);
@@ -402,6 +423,13 @@ const connectionMessage = async (Company, limit = 20) => {
 
   // close the browser
   await browser.close();
+  const end = new Date().getTime();
+  console.log(
+    "Time taken: ",
+    ((end - start) / (1000 * 60)).toFixed(2),
+    " minutes"
+  );
 };
 
 export { searchConnect, connectionMessage };
+
