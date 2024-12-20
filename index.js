@@ -3,34 +3,39 @@ import dotenv from "dotenv";
 import generateMessage from "./Message.js";
 dotenv.config();
 
-const browser = await puppeteer.launch({
-  executablePath: process.env.CHROME_DRIVER_PATH,
-  headless: false,
-  protocolTimeout: 3600000,
-});
+const openAndLogin = async (page) => {
+  await page.setViewport({ width: 1080, height: 640 });
 
-const page = await browser.newPage();
-await page.setViewport({ width: 1080, height: 640 });
+  await page.goto("https://linkedin.com/login");
 
-await page.goto("https://linkedin.com/login");
+  await page.locator("#username").fill(process.env.LINKEDIN_EMAIL);
+  await page.locator("#password").fill(process.env.LINKEDIN_PASSWORD);
+  // Don't select the "Remember me" checkbox orelse linkedin will flag you as a bot and ask for phone verification
+  const checkBtn = await page.$(".remember_me__opt_in");
+  if (checkBtn) {
+    await checkBtn.click();
+  }
 
-await page.locator("#username").fill(process.env.LINKEDIN_EMAIL);
-await page.locator("#password").fill(process.env.LINKEDIN_PASSWORD);
-// Don't select the "Remember me" checkbox orelse linkedin will flag you as a bot and ask for phone verification
-const checkBtn = await page.$(".remember_me__opt_in");
-if (checkBtn) {
-  await checkBtn.click();
-}
-
-const loginButton = await page.waitForSelector(
-  ".login__form_action_container > button"
-);
-await loginButton.click();
-await loginButton.dispose();
-await page.waitForNavigation();
+  const loginButton = await page.waitForSelector(
+    ".login__form_action_container > button"
+  );
+  await loginButton.click();
+  await loginButton.dispose();
+  await page.waitForNavigation();
+};
 
 // Company wise search and connect
 const searchConnect = async (Role, Company, limit = 20) => {
+  // Open browser
+  const browser = await puppeteer.launch({
+    executablePath: process.env.CHROME_DRIVER_PATH,
+    headless: false,
+  });
+
+  const page = await browser.newPage();
+  // Login
+  await openAndLogin(page);
+
   // Search people
   const searchInput = await page.waitForSelector(
     ".search-global-typeahead__input"
@@ -150,9 +155,21 @@ const searchConnect = async (Role, Company, limit = 20) => {
     "out of",
     inviteResult.length
   );
+  // close the browser
+  await browser.close();
 };
 
 const connectionMessage = async (Company, limit = 20) => {
+  // Open browser
+  const browser = await puppeteer.launch({
+    executablePath: process.env.CHROME_DRIVER_PATH,
+    headless: false,
+  });
+
+  const page = await browser.newPage();
+  // Login
+  await openAndLogin(page);
+
   // Search people
   const searchInput = await page.waitForSelector(
     ".search-global-typeahead__input"
@@ -339,10 +356,10 @@ const connectionMessage = async (Company, limit = 20) => {
     "out of",
     messageCount.length
   );
+
+  // close the browser
+  await browser.close();
 };
 
-await searchConnect("Software Engineer", "Google", 20);
 
-// await connectionMessage("", 15);
-
-browser.close();
+export { searchConnect, connectionMessage };
