@@ -1,7 +1,14 @@
-{
+{	"name":"linkzy",
+	"version": "1.0.0",
+	"bin": {
+		"linkzy": "./cli.js"
+	},
 	"type": "module",
 	"dependencies": {
+		"commander": "^12.1.0",
 		"dotenv": "^16.4.7",
+		"inquirer": "^12.2.0",
+		"node-localstorage": "^3.0.5",
 		"puppeteer": "^23.10.4"
 	}
 }

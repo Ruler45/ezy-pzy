@@ -1,15 +1,35 @@
 import puppeteer from "puppeteer";
 import dotenv from "dotenv";
 import generateMessage from "./Message.js";
+import { LocalStorage } from "node-localstorage";
+
+global.localStorage = new LocalStorage("./storage");
 dotenv.config();
 
+// check if the environment variables are set
+
+const checkEnv = async() => {
+  if(localStorage.getItem("LINKEDIN_EMAIL")==null && localStorage.getItem("LINKEDIN_PASSWORD")==null){
+    console.log("Please set your linkedin email and password");
+    process.exit(1);
+  }else if(localStorage.getItem("LINKEDIN_EMAIL")==null){
+    console.log("Please set your linkedin email");
+    process.exit(1);
+  }
+  else if(localStorage.getItem("LINKEDIN_PASSWORD")==null){
+    console.log("Please set your linkedin password");
+    process.exit(1);
+  }
+}
+
+// Open browser and login
 const openAndLogin = async (page) => {
   await page.setViewport({ width: 1080, height: 640 });
 
   await page.goto("https://linkedin.com/login");
 
-  await page.locator("#username").fill(process.env.LINKEDIN_EMAIL);
-  await page.locator("#password").fill(process.env.LINKEDIN_PASSWORD);
+  await page.locator("#username").fill(localStorage.LINKEDIN_EMAIL);
+  await page.locator("#password").fill(localStorage.LINKEDIN_PASSWORD);
   // Don't select the "Remember me" checkbox orelse linkedin will flag you as a bot and ask for phone verification
   const checkBtn = await page.$(".remember_me__opt_in");
   if (checkBtn) {
@@ -26,6 +46,7 @@ const openAndLogin = async (page) => {
 
 // Company wise search and connect
 const searchConnect = async (Role, Company, limit = 20) => {
+  await checkEnv();
   // Open browser
   const browser = await puppeteer.launch({
     executablePath: process.env.CHROME_DRIVER_PATH,
@@ -360,6 +381,5 @@ const connectionMessage = async (Company, limit = 20) => {
   // close the browser
   await browser.close();
 };
-
 
 export { searchConnect, connectionMessage };
