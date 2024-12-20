@@ -240,7 +240,6 @@ const connectionMessage = async (Company, limit = 20) => {
 
   // Open browser
   const browser = await puppeteer.launch({
-    executablePath: process.env.CHROME_DRIVER_PATH,
     headless: false,
   });
 
