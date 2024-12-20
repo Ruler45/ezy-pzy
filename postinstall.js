@@ -6,7 +6,7 @@ console.log("Setting up your CLI tool...");
 import { exec } from "child_process";
 
 console.log("Installing chrome driver...");
-exec("npx browser chrome", (error, stdout, stderr) => {
+exec("npx puppeteer browsers install chrome", (error, stdout, stderr) => {
   if (error) {
     console.error(`Error: ${error.message}`);
     return;
