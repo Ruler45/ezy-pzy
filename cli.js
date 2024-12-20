@@ -120,7 +120,7 @@ program
 
 // Check for no subcommands or options
 if (!process.argv.slice(2).length) {
-  console.log("Welcome to the Linkedzy CLI");
+  console.log("Welcome to the Linkedfy CLI");
   console.log("Type 'linkedzy --help' for more information");
 } else {
   program.parse(process.argv);
