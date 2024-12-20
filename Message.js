@@ -6,7 +6,7 @@ Hello ${name},
 
 I hope this message finds you well.
 
-My name is Sahin Alam, and I am a pre-final year B.Tech student at NIT Silchar with a strong foundation in Data Structures and Algorithms, Computer Science fundamentals, and beginner-level experience in web development technologies.
+My name is Your Name, and I am a pre-final year B.Tech student at NIT Silchar with a strong foundation in Data Structures and Algorithms, Computer Science fundamentals, and beginner-level experience in web development technologies.
 
 I have over a year of experience working with React and more than six months of hands-on experience with the MERN stack. I am proficient in both frontend and backend technologies, with additional knowledge spanning Operating Systems, DBMS, Computer Networks, and UI automation. In fact, this very message was sent using a UI automation tool I created.
 
@@ -20,7 +20,7 @@ Resume: {Resume Link}
 Thank you for your time and consideration.
 
 Best regards,
-Sahin Alam
+Your Name
 `;
 
   return Message;
