@@ -33,7 +33,6 @@ const searchConnect = async (Role, Company, limit = 20) => {
   const start = new Date().getTime();
   // Open browser
   const browser = await puppeteer.launch({
-    executablePath: process.env.CHROME_DRIVER_PATH,
     headless: false,
   });
 
@@ -183,7 +182,6 @@ const connectionMessage = async (Company, limit = 20) => {
 
   // Open browser
   const browser = await puppeteer.launch({
-    executablePath: process.env.CHROME_DRIVER_PATH,
     headless: false,
   });
 
@@ -389,4 +387,3 @@ const connectionMessage = async (Company, limit = 20) => {
 };
 
 export { searchConnect, connectionMessage };
-
