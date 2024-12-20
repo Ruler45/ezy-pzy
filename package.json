@@ -1,8 +1,8 @@
 {
-	"name": "linkzy",
+	"name": "autolink",
 	"version": "1.0.0",
 	"bin": {
-		"linkzy": "./cli.js"
+		"autolink": "./cli.js"
 	},
 	"type": "module",
 	"postinstall": "node postinstall.js",
