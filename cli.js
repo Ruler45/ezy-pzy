@@ -23,12 +23,19 @@ program
     });
 
 program
+    .command("message")
+    .description("To send message to connections")
+    .action(async() => {
+        await connectionMessage();
+    });
+
+program
     .option("--email, --email <email>", "Email of the linkedin account")
     .option("--password, --password <password>", "Password of the linkedin account")
     .option("--message, --message <message>", "Message to send with connection request")
-    .action(()=>{
+    .action(async()=>{
         const options = program.opts();
-        options.email && localStorage.setItem("LINKEDIN_EMAIL", options.email);
+        options.email &&  localStorage.setItem("LINKEDIN_EMAIL", options.email);
         options.password && localStorage.setItem("LINKEDIN_PASSWORD", options.password);
         options.message && localStorage.setItem("LINKEDIN_MESSAGE", options.message);
     });

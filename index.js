@@ -1,26 +1,36 @@
 import puppeteer from "puppeteer";
 import dotenv from "dotenv";
-import generateMessage from "./Message.js";
+// import generateMessage from "./Message.js";
 import { LocalStorage } from "node-localstorage";
+import {pathToFileURL} from "url";
 
 global.localStorage = new LocalStorage("./storage");
 dotenv.config();
 
 // check if the environment variables are set
 
-const checkEnv = async() => {
-  if(localStorage.getItem("LINKEDIN_EMAIL")==null && localStorage.getItem("LINKEDIN_PASSWORD")==null){
+const checkEnv = async () => {
+  if (
+    localStorage.getItem("LINKEDIN_EMAIL") == null &&
+    localStorage.getItem("LINKEDIN_PASSWORD") == null
+  ) {
     console.log("Please set your linkedin email and password");
     process.exit(1);
-  }else if(localStorage.getItem("LINKEDIN_EMAIL")==null){
+  } else if (localStorage.getItem("LINKEDIN_EMAIL") == null) {
     console.log("Please set your linkedin email");
     process.exit(1);
-  }
-  else if(localStorage.getItem("LINKEDIN_PASSWORD")==null){
+  } else if (localStorage.getItem("LINKEDIN_PASSWORD") == null) {
     console.log("Please set your linkedin password");
     process.exit(1);
   }
-}
+};
+
+const checkMessagePath = async () => {
+  if (localStorage.getItem("LINKEDIN_MESSAGE") == null) {
+    console.log("Please set the path of the Message.js file");
+    process.exit(1);
+  }
+};
 
 // Open browser and login
 const openAndLogin = async (page) => {
@@ -181,6 +191,18 @@ const searchConnect = async (Role, Company, limit = 20) => {
 };
 
 const connectionMessage = async (Company, limit = 20) => {
+  // check if the environment variables are set
+  await checkEnv();
+
+  // check if the path of the Message.js file is set
+  await checkMessagePath();
+
+  // read the Message.js file
+  const __filename = pathToFileURL("D:/Projects/Puppeteer/ezy-pzy/Message.js");
+  const { default: generateMessage } = await import(
+    __filename.href
+  );
+
   // Open browser
   const browser = await puppeteer.launch({
     executablePath: process.env.CHROME_DRIVER_PATH,
