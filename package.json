@@ -1,16 +1,18 @@
 {
-	"name": "linkedfy",
-	"version": "0.0.2",
-	"bin": {
-		"linkedfy": "./cli.js"
-	},
-	"type": "module",
-	"postinstall": "node postinstall.js",
-	"dependencies": {
-		"@inquirer/prompts": "^7.2.0",
-		"commander": "^12.1.0",
-		"dotenv": "^16.4.7",
-		"node-localstorage": "^3.0.5",
-		"puppeteer": "^23.10.4"
-	}
+  "name": "linkedfy",
+  "version": "0.0.3",
+  "bin": {
+    "linkedfy": "./cli.js"
+  },
+  "type": "module",
+  "scripts": {
+    "postinstall": "linkedfy setup"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^7.2.0",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.7",
+    "node-localstorage": "^3.0.5",
+    "puppeteer": "^23.11.1"
+  }
 }
