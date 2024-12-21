@@ -69,6 +69,7 @@ const searchConnect = async (Role, Company, limit = 20) => {
   // Open browser
   const browser = await puppeteer.launch({
     headless: false,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
   const page = await browser.newPage();
@@ -241,6 +242,7 @@ const connectionMessage = async (Company, limit = 20) => {
   // Open browser
   const browser = await puppeteer.launch({
     headless: false,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"]
   });
 
   const page = await browser.newPage();

@@ -2,11 +2,11 @@
 
 Effortlessly connect with professionals and send personalized messages on LinkedIn through the command-line.
 
-**Note:** Currently only works on Windows
+**Note:** Currently works only on Windows
 
 ![GitHub Repo Stars](https://img.shields.io/github/stars/Ruler45/linkedfy?style=social)  
 ![GitHub License](https://img.shields.io/github/license/Ruler45/linkedfy)  
-![Version](https://img.shields.io/badge/version-0.0.3-blue)  
+![Version](https://img.shields.io/badge/version-0.0.4-blue)  
 
 ## 🚀 Features  
 

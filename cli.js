@@ -37,21 +37,9 @@ program
     console.log("Setting up your CLI tool...");
 
     console.log("Installing chrome driver...");
-    exec("npx puppeteer browsers install chrome", (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error: ${error.message}`);
-        return;
-      }
-      if (stderr) {
-        console.error(`Stderr: ${stderr}`);
-        return;
-      }
-      console.log("Success: Chrome driver installed!");
-    });
-
-    if(os.platform()==="linux"){
-      console.log("Installing chromium browser...");
-      exec("sudo apt-get install -y chromium-browser", (error, stdout, stderr) => {
+    exec(
+      "npx puppeteer browsers install chrome",
+      async (error, stdout, stderr) => {
         if (error) {
           console.error(`Error: ${error.message}`);
           return;
@@ -60,26 +48,45 @@ program
           console.error(`Stderr: ${stderr}`);
           return;
         }
-        console.log("Success: Chromium browser installed!");
-      });
-    }
-    const email = await input({
-      message: "Enter the email of your LinkedIn account:",
-      type: "string",
-    });
-    const password = await input({
-      message: "Enter the password of your LinkedIn account:",
-      type: "password",
-    });
-    const message = await input({
-      message:
-        "Enter the path to Message.js file you want to send to your connection:",
-      type: "string",
-    });
-    localStorage.setItem("LINKEDIN_EMAIL", email);
-    localStorage.setItem("LINKEDIN_PASSWORD", password);
-    localStorage.setItem("LINKEDIN_MESSAGE", message);
-    console.log("Setup completed successfully. You're ready to use the CLI.");
+        console.log("Success: Chrome driver installed!");
+        if (os.platform() === "linux") {
+          console.log("Installing chromium browser...");
+          exec(
+            "sudo apt-get install -y chromium-browser",
+            (error, stdout, stderr) => {
+              if (error) {
+                console.error(`Error: ${error.message}`);
+                return;
+              }
+              if (stderr) {
+                console.error(`Stderr: ${stderr}`);
+                return;
+              }
+              console.log("Success: Chromium browser installed!");
+            }
+          );
+        }
+        const email = await input({
+          message: "Enter the email of your LinkedIn account:",
+          type: "string",
+        });
+        const password = await input({
+          message: "Enter the password of your LinkedIn account:",
+          type: "password",
+        });
+        const message = await input({
+          message:
+            "Enter the path to Message.js file you want to send to your connection:",
+          type: "string",
+        });
+        localStorage.setItem("LINKEDIN_EMAIL", email);
+        localStorage.setItem("LINKEDIN_PASSWORD", password);
+        localStorage.setItem("LINKEDIN_MESSAGE", message);
+        console.log(
+          "Setup completed successfully. You're ready to use the CLI."
+        );
+      }
+    );
   });
 
 // Subcommand to connect
