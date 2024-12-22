@@ -11,22 +11,22 @@ dotenv.config();
 
 const checkEnv = async () => {
   if (
-    localStorage.getItem("LINKEDIN_EMAIL") == null &&
-    localStorage.getItem("LINKEDIN_PASSWORD") == null
+    localStorage.getItem("email") == null &&
+    localStorage.getItem("password") == null
   ) {
     console.log("Please set your linkedin email and password");
     process.exit(1);
-  } else if (localStorage.getItem("LINKEDIN_EMAIL") == null) {
+  } else if (localStorage.getItem("email") == null) {
     console.log("Please set your linkedin email");
     process.exit(1);
-  } else if (localStorage.getItem("LINKEDIN_PASSWORD") == null) {
+  } else if (localStorage.getItem("password") == null) {
     console.log("Please set your linkedin password");
     process.exit(1);
   }
 };
 
 const checkMessagePath = async () => {
-  if (localStorage.getItem("LINKEDIN_MESSAGE") == null) {
+  if (localStorage.getItem("message") == null) {
     console.log("Please set the path of the Message.js file");
     process.exit(1);
   }
@@ -38,8 +38,8 @@ const openAndLogin = async (page) => {
 
   await page.goto("https://linkedin.com/login");
 
-  await page.locator("#username").fill(localStorage.LINKEDIN_EMAIL);
-  await page.locator("#password").fill(localStorage.LINKEDIN_PASSWORD);
+  await page.locator("#username").fill(localStorage.email);
+  await page.locator("#password").fill(localStorage.password);
   // Don't select the "Remember me" checkbox orelse linkedin will flag you as a bot and ask for phone verification
   const checkBtn = await page.$(".remember_me__opt_in");
   if (checkBtn) {
@@ -112,11 +112,18 @@ const searchConnect = async (Role, Company, limit = 20) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     await page.locator(".basic-typeahead__selectable").click();
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    await page.locator("aria/Apply current filter to show results").click();
-    // await page.waitForNavigation();
     await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    const filtered = await page.evaluate(() => {
+      const filterButton = Array.from(document.querySelectorAll("button")).find(
+        (btn) => btn.innerText === "Show results"
+      );
+      if (!filterButton) return false;
+      filterButton && filterButton.click();
+      return true;
+    });
+    if (!filtered) return console.log("Failed to filter by company");
+    await new Promise((resolve) => setTimeout(resolve, 1500));
   };
 
   Company !== undefined && Company != "" && (await filterByCompany(Company));
@@ -242,7 +249,7 @@ const connectionMessage = async (Company, limit = 20) => {
   // Open browser
   const browser = await puppeteer.launch({
     headless: false,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
   const page = await browser.newPage();
@@ -280,11 +287,18 @@ const connectionMessage = async (Company, limit = 20) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     await page.locator(".basic-typeahead__selectable").click();
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    await page.locator("aria/Apply current filter to show results").click();
-    // await page.waitForNavigation();
     await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    const filtered = await page.evaluate(() => {
+      const filterButton = Array.from(document.querySelectorAll("button")).find(
+        (btn) => btn.innerText === "Show results"
+      );
+      if (!filterButton) return false;
+      filterButton && filterButton.click();
+      return true;
+    });
+    if (!filtered) return console.log("Failed to filter by company");
+    await new Promise((resolve) => setTimeout(resolve, 1500));
   };
 
   Company !== undefined && Company != "" && (await filterByCompany(Company));

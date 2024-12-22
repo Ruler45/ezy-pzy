@@ -2,11 +2,11 @@
 
 Effortlessly connect with professionals and send personalized messages on LinkedIn through the command-line.
 
-**Note:** Currently works only on Windows
+**Note:** Currently works only on Windows & Linux (haven't tested it for MacOS)
 
 ![GitHub Repo Stars](https://img.shields.io/github/stars/Ruler45/linkedfy?style=social)  
 ![GitHub License](https://img.shields.io/github/license/Ruler45/linkedfy)  
-![Version](https://img.shields.io/badge/version-0.0.4-blue)  
+![Version](https://img.shields.io/badge/version-0.0.5-blue)  
 
 ## 🚀 Features  
 
@@ -25,26 +25,31 @@ Install the CLI tool globally using `npm`:
 
 ## 🛠️ Usage  
 
+### 🛠️ Set Configurations
+
+Use the command `linkedfy config` to set configurations.
+Read the help manual before using the command : Run `linkedfy help config`
+
 ### Command Descriptions and Examples  
 
 1. **Set Credentials**:  
    Save your LinkedIn credentials for automated tasks.  
 
    ```bash
-   linkedfy --email <your-email> --password <your-password>
+   linkedfy config email johndoe@gmail.com
    ```  
 
    Example:  
 
    ```bash
-   linkedfy --email example@gmail.com --password SuperSecretPassword
+   linkedfy config password SuperSecretPassword
    ```  
 
 2. **Set Message File Path**:  
    Set the path for Message.js file for message (Follow a simillar template as [Message.js](Message.js))
 
    ```bash
-   linkedfy --message D://User/Project/Message.js
+   linkedfy config message D://User/Project/Message.js
    ```
 
 3. **Send Connection Requests**:  
@@ -76,19 +81,20 @@ Display a list of commands and their descriptions:
 When you run `linkedfy --help`, the following output is displayed:  
 
 ```plaintext
-Usage: linkedfy [options] [command]
+    Usage: linkedfy [options] [command]
 
-Options:
-  -V, --version            Output the version number
-  --email <email>          Set the email of the LinkedIn account
-  --password <password>    Set the password of the LinkedIn account
-  --message <message>      Set the message file path to send
-  -h, --help               Display help for command
+    Welcome to Linkedfy CLI
 
-Commands:
-  connect                  Search people and send connection requests on LinkedIn
-  message                  Send messages to LinkedIn connections
-  help [command]           Display help for a specific command
+    Options:
+      -v, --version                   Output the version number
+      -h, --help                      display help for command
+
+    Commands:
+      setup                           Setup the CLI tool post installation. Run this before using the tool(If     it's not run automatically)
+      config <key> [value]  Set the configuration for the CLI tool
+      connect                         Search people and send connection requests on LinkedIn
+      message                         Send messages to LinkedIn connections
+      help [command]                  display help for command
 ```
 
 ---
