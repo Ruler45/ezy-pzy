@@ -29,7 +29,11 @@ const searchConnect = async (Role, Company, limit = 20) => {
   // Calculate expected time
   const expectedTime = (45 + limit * 5) / 60;
   console.log("Sending messages. Please wait...");
-  console.log("Expected time required: ", expectedTime.toFixed(2), " minutes\n");
+  console.log(
+    "Expected time required: ",
+    expectedTime.toFixed(2),
+    " minutes\n"
+  );
   const start = new Date().getTime();
   // Open browser
   const browser = await puppeteer.launch({
@@ -76,11 +80,18 @@ const searchConnect = async (Role, Company, limit = 20) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     await page.locator(".basic-typeahead__selectable").click();
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    await page.locator("aria/Apply current filter to show results").click();
-    // await page.waitForNavigation();
     await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    const filtered = await page.evaluate(() => {
+      const filterButton = Array.from(document.querySelectorAll("button")).find(
+        (btn) => btn.innerText === "Show results"
+      );
+      if (!filterButton) return false;
+      filterButton && filterButton.click();
+      return true;
+    });
+    if (!filtered) return console.log("Failed to filter by company");
+    await new Promise((resolve) => setTimeout(resolve, 1500));
   };
 
   Company !== undefined && Company != "" && (await filterByCompany(Company));
@@ -129,8 +140,13 @@ const searchConnect = async (Role, Company, limit = 20) => {
           }
         });
         InvitesSent.push(sentIndividually ? "1" : "0");
-        if(InvitesSent.length % 5 === 0) console.log("............ ", (InvitesSent.length / limit) * 100, "% completed");
-        
+        if (InvitesSent.length % 5 === 0)
+          console.log(
+            "............ ",
+            (InvitesSent.length / limit) * 100,
+            "% completed"
+          );
+
         // Break if limit reached
         if (limit && InvitesSent.length >= limit) return InvitesSent;
       }
@@ -220,11 +236,18 @@ const connectionMessage = async (Company, limit = 20) => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     await page.locator(".basic-typeahead__selectable").click();
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    await page.locator("aria/Apply current filter to show results").click();
-    // await page.waitForNavigation();
     await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    const filtered = await page.evaluate(() => {
+      const filterButton = Array.from(document.querySelectorAll("button")).find(
+        (btn) => btn.innerText === "Show results"
+      );
+      if (!filterButton) return false;
+      filterButton && filterButton.click();
+      return true;
+    });
+    if (!filtered) return console.log("Failed to filter by company");
+    await new Promise((resolve) => setTimeout(resolve, 1500));
   };
 
   Company !== undefined && Company != "" && (await filterByCompany(Company));
@@ -387,3 +410,6 @@ const connectionMessage = async (Company, limit = 20) => {
 };
 
 export { searchConnect, connectionMessage };
+
+
+await searchConnect("Data Analyst", "Uber", 20);
