@@ -1,17 +1,13 @@
 {
   "name": "linkedfy",
-  "version": "0.0.6",
+  "version": "0.0.8",
   "bin": {
     "linkedfy": "./cli.js"
   },
   "type": "module",
-  "scripts": {
-    "postinstall": "linkedfy setup"
-  },
   "dependencies": {
     "@inquirer/prompts": "^7.2.0",
     "commander": "^12.1.0",
-    "dotenv": "^16.4.7",
     "node-localstorage": "^3.0.5",
     "puppeteer": "^23.11.1"
   }

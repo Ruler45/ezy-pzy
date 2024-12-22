@@ -11,7 +11,7 @@ global.localStorage = new LocalStorage("./storage");
 
 // main command
 program
-  .version("0.0.6", "-v, --version", "Output the version number")
+  .version("0.0.8", "-v, --version", "Output the version number")
   .description("Welcome to Linkedfy CLI").helpInformation = () => {
   return `
     Usage: linkedfy [options] [command]
