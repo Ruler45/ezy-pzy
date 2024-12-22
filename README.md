@@ -6,7 +6,7 @@ Effortlessly connect with professionals and send personalized messages on Linked
 
 ![GitHub Repo Stars](https://img.shields.io/github/stars/Ruler45/linkedfy?style=social)  
 ![GitHub License](https://img.shields.io/github/license/Ruler45/linkedfy)  
-![Version](https://img.shields.io/badge/version-0.0.8-blue)
+![Version](https://img.shields.io/badge/version-0.0.11-blue)
 
 ## 🚀 Features  
 

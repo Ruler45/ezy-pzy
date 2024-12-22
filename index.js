@@ -1,11 +1,11 @@
 import puppeteer from "puppeteer";
-import dotenv from "dotenv";
+// import dotenv from "dotenv";
 // import generateMessage from "./Message.js";
 import { LocalStorage } from "node-localstorage";
 import { pathToFileURL } from "url";
 
 global.localStorage = new LocalStorage("./storage");
-dotenv.config();
+// dotenv.config();
 
 // check if the environment variables are set
 
